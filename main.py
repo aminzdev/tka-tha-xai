@@ -37,12 +37,25 @@ row_id = st.sidebar.number_input("Select patient row (index)", 0, len(X) - 1, 0)
 # Get instance
 instance = pd.DataFrame([X.iloc[row_id, :]], columns=X.columns)
 
+col_logo, _, col_qr_code = st.columns([1, 5, 1])
+
+with col_logo:
+    st.image("https://pitthexai.github.io/assets/img/Pitthexai_logo.png", width=300)
+
+with col_qr_code:
+    st.image("https://pitthexai.github.io/images/qr-code.png", width=120)
+
+st.set_page_config(page_title="TKA TJA XAI", page_icon="🦿", layout="wide")
+
+
 st.write("### Selected Patient Data")
 st.write(instance)
 
 # Prediction
 proba = model.predict_proba(instance)[0, class_id]
-st.metric(f"Predicted Probability ({class_names[class_id]})", f"{proba:.2f}")
+
+st.sidebar.text(f"Predicted Probability ({class_names[class_id]}): {proba:.2f}")
+
 
 # SHAP Explanation
 explainer = (
@@ -63,35 +76,40 @@ else:
     shap_row = shap_values[row_id, :]
     expected_value = explainer.expected_value  # type: ignore
 
-st.write("### Global SHAP Summary")
-fig, ax = plt.subplots()
-shap.summary_plot(values, X, show=False, plot_type="bar")  # or "dot"
-st.pyplot(fig)
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.write("### Global SHAP Summary")
+    fig, ax = plt.subplots()
+    shap.summary_plot(values, X, show=False, plot_type="bar")  # or "dot"
+    st.pyplot(fig)
 
 # Local SHAP explanation
-st.write("### Local SHAP (Selected Patient)")
+with col2:
+    st.write("### Local SHAP (Selected Patient)")
 
-fig = shap.force_plot(
-    expected_value,  # type: ignore
-    shap_row,
-    X.iloc[row_id, :],
-    matplotlib=True,
-    show=False,
-)
-st.pyplot(fig)
+    fig = shap.force_plot(
+        expected_value,  # type: ignore
+        shap_row,
+        X.iloc[row_id, :],
+        matplotlib=True,
+        show=False,
+    )
+    st.pyplot(fig)
 
 # LIME Explanation
-st.write("### LIME Explanation")
-lime_explainer = lime.lime_tabular.LimeTabularExplainer(
-    training_data=X.values,
-    feature_names=X.columns.tolist(),
-    class_names=["No Arrest", "Arrest"],
-    mode="classification",
-)
+with col3:
+    st.write("### LIME Explanation")
+    lime_explainer = lime.lime_tabular.LimeTabularExplainer(
+        training_data=X.values,
+        feature_names=X.columns.tolist(),
+        class_names=["No Arrest", "Arrest"],
+        mode="classification",
+    )
 
-lime_exp = lime_explainer.explain_instance(
-    instance.values[0], model.predict_proba, num_features=10
-)
+    lime_exp = lime_explainer.explain_instance(
+        instance.values[0], model.predict_proba, num_features=10
+    )
 
-fig = lime_exp.as_pyplot_figure()
-st.pyplot(fig)
+    fig = lime_exp.as_pyplot_figure()
+    st.pyplot(fig)
