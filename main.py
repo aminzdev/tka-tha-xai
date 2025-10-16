@@ -43,7 +43,7 @@ with col_qr_code:
 # --- SIDEBAR ---
 st.sidebar.title("Controls")
 model_choice = st.sidebar.selectbox(
-    "Choose Model", ["Random Forest", "XGBoost", "Logistic Regression"]
+    "**Choose Models**", ["Random Forest", "XGBoost", "Logistic Regression"]
 )
 
 if model_choice == "Random Forest":
@@ -54,9 +54,9 @@ else:
     model = lr_model
 
 class_names = ["CDMI", "Cardiac Arrest"]
-class_name = st.sidebar.selectbox("Select class", class_names)
+class_name = st.sidebar.selectbox("**Select class**", class_names)
 class_id = class_names.index(class_name)
-row_id = st.sidebar.number_input("Select patient row (index)", 0, len(X) - 1, 0)
+row_id = st.sidebar.number_input("**Select patient row (index)**", 0, len(X) - 1, 0)
 
 # Get instance
 instance = pd.DataFrame([X.iloc[row_id, :]], columns=X.columns)
@@ -64,7 +64,7 @@ instance = pd.DataFrame([X.iloc[row_id, :]], columns=X.columns)
 # Prediction
 proba = model.predict_proba(instance)[0, class_id]
 st.sidebar.metric(
-    label=f"Predicted Probability ({class_names[class_id]})", value=f"{proba:.2f}"
+    label=f"**Predicted Probability ({class_names[class_id]})**", value=f"{proba:.2f}"
 )
 
 
